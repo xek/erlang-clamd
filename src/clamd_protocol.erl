@@ -15,9 +15,12 @@ chunk_stream(Socket, Chunk) ->
 end_stream(Socket) ->
     gen_tcp:send(Socket,[0,0,0,0]),
     R = case response(Socket) of
-        {ok, "OK"} -> {ok, no_virus};
-        {ok,"stream: " ++ Name} -> {ok, virus, lists:sublist(Name, length(Name) - 6)};
-        {error, Reason} -> {error, Reason}
+        {ok, "OK"} ->
+		{ok, no_virus};
+        {ok,"stream: " ++ Name} ->
+		{ok, virus, lists:sublist(Name, length(Name) - 6)};
+        {error, Reason} ->
+		{error, Reason}
     end,
     R.
 
@@ -26,8 +29,10 @@ scan(Socket, Path) ->
         {ok, Blob} ->
             T = string:tokens(Blob, " "),
             case lists:last(T) of
-                "OK" -> {ok, no_virus};
-                "FOUND" -> {ok, virus, lists:nth(length(T) -1, T), lists:nth(1, T)};
+                "OK" ->
+		    {ok, no_virus};
+                "FOUND" ->
+		    {ok, virus, lists:nth(length(T) -1, T), lists:nth(1, T)};
                 _ -> {error, Blob}
         end;
         {error, Reason} -> {error, Reason}
@@ -36,7 +41,7 @@ end.
 % http://www.clamav.net/doc/latest/html/node28.html
 
 message(Action) ->
-    "z" ++ Action ++ [0].
+    [$z, Action, 0].
 
 % Ask something to clamd and retuen response
 ask(Socket, Action) ->
@@ -54,4 +59,3 @@ response(Socket, Acc) ->
             end;
         {error, Reason} -> {error, Reason}
     end.
-

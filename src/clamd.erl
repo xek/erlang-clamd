@@ -25,7 +25,7 @@ handle_info/2, terminate/2, code_change/3]).
     transaction/1
     ]).
 
--record(state, {socket, host, port}).
+-record(state, {socket, path, host, port}).
 
 %%====================================================================
 %% api callbacks
@@ -47,13 +47,10 @@ start_link(Args) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %.s %--------------------------------------------------------------------
+init([Path]) ->
+    {ok, #state{path = Path}};
 init([Host, Port]) ->
-    {ok, #state{
-            socket = nil,
-            host = Host,
-            port = Port
-        }
-    }.
+    {ok, #state{host = Host, port = Port}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -115,6 +112,8 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %%--------------------------------------------------------------------
+terminate(_Reason, #state{socket=undefined}) ->
+    ok; % called on exception exit
 terminate(_Reason, #state{socket=Socket}) ->
     gen_tcp:close(Socket).
 
@@ -209,13 +208,21 @@ file_wrapper(Path) ->
 %%% Internal functions
 %%--------------------------------------------------------------------
 
-connect(#state{host=Host, port=Port} = State) ->
+connect(#state{path=undefined, host=Host, port=Port} = State) ->
     case gen_tcp:connect(Host, Port, [list, {packet, raw}, {active, false}]) of
         {ok, Socket} ->
             {ok, State#state{
                 socket = Socket,
                 host = Host,
                 port = Port
+            }};
+        {error, Reason} -> {stop, Reason}
+    end;
+connect(#state{path=Path} = State) ->
+    case afunix:connect(Path, [list, {packet, raw}, {active, false}]) of
+        {ok, Socket} ->
+            {ok, State#state{
+                socket = Socket
             }};
         {error, Reason} -> {stop, Reason}
     end.

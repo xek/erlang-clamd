@@ -9,8 +9,10 @@
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+		  afunix,
+		  poolboy
                  ]},
   {mod, { clamd_app, []}},
-  {env, []}
+  {env, [{connection, ["/var/run/clamav/clamd.sock"]}]}
  ]}.

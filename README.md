@@ -16,6 +16,14 @@ On OSX
 
 ### Configuration
 
+Make sure clamd creates the configured server socket:
+
+	{connection, ["/var/run/clamav/clamd.sock"]}
+
+You can change the configuration to connect to a TCP/IP server like so:
+
+	{connection, ["localhost", 3310]}
+
 Open the TCP socket in `clamd.conf`
 
 	TCPSocket 3310
@@ -55,10 +63,12 @@ and each stream is handled inside a transaction.
 
  * √ Talking to clamd
  * √ Connection pool
+ * √ Connecting via a unix socket
  * _ One session per stream
  * _ Some parameters
 
 
 # Licence
 
+MIT. © 2014, Grzegorz Grasza.
 MIT. © 2011, Mathieu Lecarme.

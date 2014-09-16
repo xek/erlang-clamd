@@ -10,7 +10,8 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    clamd_sup:start_link().
+    {ok, Connection} = application:get_env(clamd, connection),
+    clamd_sup:start_link(Connection).
 
 stop(_State) ->
     ok.
